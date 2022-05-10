@@ -7,6 +7,7 @@ import DepartamentPage from "./pages/Departament";
 
 import ErrorPage from "./pages/Error";
 import CategoryPage from "./pages/Category";
+import PatrimonyPage from "./pages/Patrimony";
 
 const RoutesApp = () => {
   return (
@@ -17,6 +18,7 @@ const RoutesApp = () => {
         <Route exact path="/dashboard" element={<DashboardPage />} />
         <Route exact path="/departament" element={<DepartamentPage />} />
         <Route exact path="/category" element={<CategoryPage />} />
+        <Route exact path="/patrimony" element={<PatrimonyPage />} />
 
         <Route path="*" element={<ErrorPage />} />
       </Routes>
