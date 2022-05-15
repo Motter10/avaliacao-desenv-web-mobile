@@ -19,15 +19,24 @@ export default function PatrimonyPage() {
         patrimonyModal,
         handleCloseModal,
         showModal,
-        setPatrimonyModal, } = usePatrimonies()
+        setPatrimonyModal } = usePatrimonies()
 
     const { departaments } = useDepartments()
     const { categories } = useCategories()
 
-    const [numberOfCategories, setNumberOfCategories] = useState(1)
+    const [numberOfCategories, setNumberOfCategories] = useState(Object.keys(patrimonyModal.categories).length)
+
+    useEffect(() => {
+        setNumberOfCategories(Object.keys(patrimonyModal.categories).length)
+    }, [patrimonyModal.id])
 
     function handleSubmit(event) {
-        console.log(patrimonyModal)
+        event.preventDefault();
+        if (patrimonyModal.categories.length < 1) {
+            alert("Selecione pelo menos uma categoria")
+            return
+        }
+        
         if (typeCrud === 'NEW') {
             let lastId = 0;
             if (patrimonies.length > 0) {
@@ -38,7 +47,10 @@ export default function PatrimonyPage() {
                 {
                     id: lastId + 1,
                     name: patrimonyModal.name,
-                    description: patrimonyModal.description
+                    description: patrimonyModal.description,
+                    price: patrimonyModal.price,
+                    departament: patrimonyModal.departament,
+                    categories: patrimonyModal.categories
                 }
             ]);
         } else {
@@ -57,72 +69,52 @@ export default function PatrimonyPage() {
         event.preventDefault();
     }
 
-    const [rows, setRows] = useState([1])
-    // const rows = useState(
-    //     <Form.Select key="-99" aria-label="Selecione..."
-    //         value={patrimonyModal.categories}
-    //         onChange={e => setPatrimonyModal(
-    //             {
-    //                 ...patrimonyModal,
-    //                 categories: e.target.value
-    //             }
-    //         )}>
+    const [rows, setRows] = useState([0])
 
-    //         <option>Open this select menuuu</option>
-    //         {categories.map((category) => (
-    //             <option key={category.id} value={category.id}>{category.name}</option>
-    //         ))}
-    //     </Form.Select>
-    // )
-
+    
     useEffect(() => {
         setRows([])
-        for (let i = 1; i < numberOfCategories; i++) {
+        for (let i = 0; i < numberOfCategories; i++) {
             setRows(old => [...old, i])
         }
     }, [numberOfCategories, setRows])
-
-    // useEffect(() => {
-    //     for (let i = 0; i < numberOfCategories; i++) {
-    //         rows.push(
-    //             <Form.Select key={i.toString()} aria-label="Selecione..."
-    //                 value={patrimonyModal.categories}
-    //                 onChange={e => setPatrimonyModal(
-    //                     {
-    //                         ...patrimonyModal,
-    //                         categories: e.target.value
-    //                     }
-    //                 )}>
-
-    //                 <option>Open this select menu</option>
-    //                 {categories.map((category) => (
-    //                     <option key={category.id} value={category.id}>{category.name}</option>
-    //                 ))}
-    //             </Form.Select>
-    //         )
-    //     }
-
-    // }, [numberOfCategories, rows, patrimonyModal, categories, setPatrimonyModal])
+    
+    // Se clicar no botao de -, remove categoria
+    useEffect(() => {
+        if(numberOfCategories < Object.keys(patrimonyModal.categories).length)
+        {
+            setPatrimonyModal(old => {
+                const cats = old.categories;
+                delete cats[`cat_${numberOfCategories}`]
+                
+                return {
+                    ...patrimonyModal,
+                    categories: cats
+                }
+            })
+        }
+    }, [numberOfCategories])
+    
     function renderRow(row) {
-        // return <li>Num: {row}</li>
-        // console.log(patrimonyModal)
-        // patrimonyModal.categories[row] = ""
+        
         return (
-            <Form.Select key={row} aria-label="Selecione..."
-                // value={patrimonyModal.categories[row]}
-                onChange={e => setPatrimonyModal((old) => (
-                    {
-                        ...patrimonyModal,
-                        categories: e.target.value
-                    }
-                )
-                )}>
+            <Form.Group key={row} size='lg' controlId={`cat_${row.toString()}`}>
+                <Form.Select  aria-label="Selecione..."
+                    value={patrimonyModal.categories[`cat_${row.toString()}`]}
+                    onChange={e => setPatrimonyModal((old) => (
+                        {
+                            ...patrimonyModal,
+                            categories: {...old.categories, [`cat_${row.toString()}`]: e.target.value}
+                        }
+                    ))}
+                    >
 
-                <option>Open this select menu</option>
-                {categories.map((category) => (
-                    <option key={category.id} value={category.id}>{category.name}</option>
-                ))}
-            </Form.Select>
+                    <option>Open this select menu</option>
+                    {categories.map((category) => (
+                        <option key={category.id} value={category.name}>{category.name}</option>
+                    ))}
+                </Form.Select>
+            </Form.Group>
         )
     }
 
@@ -150,6 +142,9 @@ export default function PatrimonyPage() {
                                         <th>Código</th>
                                         <th>Nome</th>
                                         <th>Descricao</th>
+                                        <th>Preco</th>
+                                        <th>Departamento</th>
+                                        <th>Categorias</th>
                                         <th>Ação</th>
                                     </tr>
                                 </thead>
@@ -161,6 +156,12 @@ export default function PatrimonyPage() {
                                                     <td>{departmentLoop.id}</td>
                                                     <td>{departmentLoop.name}</td>
                                                     <td>{departmentLoop.description}</td>
+                                                    <td>{departmentLoop.price}</td>
+                                                    <td>{departmentLoop.departament}</td>
+                                                    <td>
+                                                    {Object.keys(departmentLoop.categories).length &&
+                                                        Object.values(departmentLoop.categories).map((category, i) => <p key={i.toString()}>{category}</p> )}
+                                                    </td>
                                                     <td>
                                                         <Button variant="outline-secondary"
                                                             onClick={() => editPatrimony(departmentLoop)}
@@ -245,7 +246,7 @@ export default function PatrimonyPage() {
                                     )}>
                                     <option>Open this select menu</option>
                                     {departaments.map((departament) => (
-                                        <option key={departament.id} value={departament.id}>{departament.name}</option>
+                                        <option key={departament.id} value={departament.name}>{departament.name}</option>
                                     ))}
                                 </Form.Select>
                             </Form.Group>
@@ -254,18 +255,18 @@ export default function PatrimonyPage() {
                         <section></section>
                         <br />
                         <h6>Informe as Categorias</h6>
-                        <Form.Group size='lg' controlId="categories">
-                            <Form.Label>Categoria</Form.Label>
+                        {/* <Form.Group size='lg' controlId="categories">
+                            <Form.Label>Categoria</Form.Label> */}
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'column', width: '100%' }}>
                                     <ul>{rows.map((row) => renderRow(row))}</ul>
                                 </div>
 
                                 <Button style={{ marginLeft: 10, height: 37 }} variant="outline-dark" onClick={() => setNumberOfCategories(old => old + 1)}>+</Button>
-                                <Button style={{ marginLeft: 10, height: 37 }} variant="outline-dark" onClick={() => setNumberOfCategories(old => old - 1)}>-</Button>
+                                <Button style={{ marginLeft: 10, height: 37 }} variant="outline-dark" onClick={() => setNumberOfCategories(old => old > 0 && old - 1)}>-</Button>
 
                             </div>
-                        </Form.Group>
+                        {/* </Form.Group> */}
                     </Form>
                 </ModalForm>
 
