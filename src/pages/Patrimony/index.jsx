@@ -105,7 +105,7 @@ export default function PatrimonyPage() {
     // }, [numberOfCategories, rows, patrimonyModal, categories, setPatrimonyModal])
     function renderRow(row) {
         // return <li>Num: {row}</li>
-        console.log(patrimonyModal)
+        // console.log(patrimonyModal)
         // patrimonyModal.categories[row] = ""
         return (
             <Form.Select key={row} aria-label="Selecione..."
